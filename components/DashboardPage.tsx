@@ -31,9 +31,11 @@ export function DashboardPage({ onBackToHome }: DashboardPageProps) {
               <span className="text-sm">Back</span>
             </button>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <span className="text-white text-sm font-bold">H</span>
-              </div>
+              <img 
+                src="/styles/Hornet.png" 
+                alt="Hornet Logo" 
+                className="w-8 h-8 rounded-full object-cover"
+              />
               <span className="text-xl">Hornet</span>
             </div>
           </div>

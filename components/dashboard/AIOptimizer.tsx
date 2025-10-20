@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Brain, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { useProtocolData, useUserMetrics } from '../../hooks/useProtocolData';
+import { useAIOptimizer } from '../../hooks/useAIOptimizer';
 
 interface Suggestion {
   protocol: string;
@@ -13,21 +13,13 @@ interface Suggestion {
 }
 
 export function AIOptimizer() {
-  const { protocolsData, isLoading: protocolsLoading } = useProtocolData();
-  const { metrics } = useUserMetrics();
+  const { data, isLoading, error } = useAIOptimizer();
   
-  const suggestions: Suggestion[] = (protocolsData || []).map(protocol => ({
-    protocol: protocol.name,
-    currentAPY: protocol.apy,
-    suggestedAPY: protocol.apy * 1.15, // Simulation d'une optimisation de 15%
-    confidence: Math.floor(85 + Math.random() * 10),
-    reasoning: `${protocol.name} offers competitive yields with ${protocol.apy}% APY and ${(Number(protocol.tvl) / 1e18).toFixed(2)} ETH TVL.`
-  }));
+  const suggestions: Suggestion[] = data?.strategies || [];
+  const currentProtocol = data?.currentStrategy || "None";
+  const currentAPY = data?.currentAPY || 0;
 
-  const currentProtocol = metrics?.activeStrategy || "Not connected";
-  const currentAPY = metrics?.currentApy || 0;
-
-  if (protocolsLoading) {
+  if (isLoading) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}

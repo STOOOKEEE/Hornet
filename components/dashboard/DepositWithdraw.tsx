@@ -4,22 +4,28 @@ import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { useUserMetrics } from '../../hooks/useProtocolData';
 
 export function DepositWithdraw() {
+  const { metrics } = useUserMetrics();
   const [amount, setAmount] = useState("");
-  const [depositedAmount, setDepositedAmount] = useState(0);
-  const [earnedInterest, setEarnedInterest] = useState(45.23);
+  
+  // Utiliser les vraies données de l'utilisateur
+  const depositedAmount = metrics ? Number(metrics.totalValueLocked) / 1e18 : 0;
+  const earnedInterest = metrics ? Number(metrics.totalEarned) / 1e18 : 0;
 
   const handleDeposit = () => {
     if (amount) {
-      setDepositedAmount(depositedAmount + parseFloat(amount));
+      // TODO: Implémenter la transaction de dépôt avec useWriteContract
+      console.log('Depositing:', amount);
       setAmount("");
     }
   };
 
   const handleWithdraw = () => {
     if (amount && parseFloat(amount) <= depositedAmount) {
-      setDepositedAmount(depositedAmount - parseFloat(amount));
+      // TODO: Implémenter la transaction de retrait avec useWriteContract
+      console.log('Withdrawing:', amount);
       setAmount("");
     }
   };
