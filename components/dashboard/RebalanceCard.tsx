@@ -43,11 +43,6 @@ export function RebalanceCard() {
             <div>
               <div className="text-sm mb-1 flex items-center gap-2">
                 Auto-Rebalancing
-                {!autoRebalance && (
-                  <Badge variant="outline" className="text-xs border-yellow-500/50 text-yellow-400">
-                    Premium
-                  </Badge>
-                )}
               </div>
               <div className="text-xs text-gray-400">
                 Automatically switch to optimal protocols

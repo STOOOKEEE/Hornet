@@ -2,53 +2,85 @@ import { motion } from "framer-motion";
 import { TrendingUp, Activity, DollarSign, Percent } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useUserMetrics } from '../../hooks/useProtocolData';
+import { useState } from 'react';
+
+type TimePeriod = '1W' | '1M' | '3M' | '1Y';
 
 export function PerformanceMetrics() {
   const { metrics, isLoading } = useUserMetrics();
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('1M');
   
   const formattedMetrics = [
     {
       label: "Total Value Locked",
-      value: metrics ? `$${(Number(metrics.totalValueLocked) / 1e18).toFixed(2)}` : "...",
-      change: "+12.5%", // TODO: Calculer le vrai changement
+      value: metrics ? `$${(Number(metrics.totalValueLocked) / 1e18).toFixed(2)}` : "$0.00",
+      change: "0%",
       positive: true,
       icon: DollarSign,
     },
     {
       label: "Current APY",
-      value: metrics ? `${metrics.currentApy}%` : "...",
-      change: "+0.8%", // TODO: Calculer le vrai changement
+      value: metrics ? `${metrics.currentApy}%` : "0%",
+      change: "0%",
       positive: true,
       icon: Percent,
     },
     {
       label: "Total Earned",
-      value: metrics ? `$${(Number(metrics.totalEarned) / 1e18).toFixed(2)}` : "...",
-      change: "+$5.12", // TODO: Calculer le vrai changement
+      value: metrics ? `$${(Number(metrics.totalEarned) / 1e18).toFixed(2)}` : "$0.00",
+      change: "0%",
       positive: true,
       icon: TrendingUp,
     },
     {
       label: "Active Strategy",
-      value: metrics?.activeStrategy || "...",
-      change: "Optimized",
+      value: metrics?.activeStrategy || "None",
+      change: "",
       positive: true,
       icon: Activity,
     },
   ];
 
-  const chartData = [
-    { date: "Jan 1", value: 1000 },
-    { date: "Jan 5", value: 1015 },
-    { date: "Jan 10", value: 1032 },
-    { date: "Jan 15", value: 1048 },
-    { date: "Jan 20", value: 1070 },
-    { date: "Jan 25", value: 1095 },
-    { date: "Jan 30", value: 1125 },
-    { date: "Feb 4", value: 1158 },
-    { date: "Feb 9", value: 1189 },
-    { date: "Feb 14", value: 1235 },
-  ];
+  // Filtrer les données selon la période sélectionnée
+  const filterDataByPeriod = (period: TimePeriod) => {
+    if (!metrics?.historicalBalances || metrics.historicalBalances.length === 0) {
+      return [{ date: "Now", value: 0 }];
+    }
+
+    const now = Date.now();
+    let cutoffTime: number;
+
+    switch (period) {
+      case '1W':
+        cutoffTime = now - 7 * 24 * 60 * 60 * 1000;
+        break;
+      case '1M':
+        cutoffTime = now - 30 * 24 * 60 * 60 * 1000;
+        break;
+      case '3M':
+        cutoffTime = now - 90 * 24 * 60 * 60 * 1000;
+        break;
+      case '1Y':
+        cutoffTime = now - 365 * 24 * 60 * 60 * 1000;
+        break;
+      default:
+        cutoffTime = now - 30 * 24 * 60 * 60 * 1000;
+    }
+
+    const filtered = metrics.historicalBalances.filter(
+      (item) => item.timestamp >= cutoffTime
+    );
+
+    return filtered.map((item) => ({
+      date: new Date(item.timestamp).toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      }),
+      value: Number(item.value) / 1e18
+    }));
+  };
+
+  const displayChartData = filterDataByPeriod(selectedPeriod);
 
   return (
     <motion.div
@@ -96,24 +128,25 @@ export function PerformanceMetrics() {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl">Portfolio Growth</h3>
           <div className="flex gap-2">
-            <button className="px-3 py-1 rounded-lg bg-white/10 text-xs hover:bg-white/20 transition-colors">
-              1W
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-white/5 text-xs hover:bg-white/10 transition-colors">
-              1M
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-white/5 text-xs hover:bg-white/10 transition-colors">
-              3M
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-white/5 text-xs hover:bg-white/10 transition-colors">
-              1Y
-            </button>
+            {(['1W', '1M', '3M', '1Y'] as TimePeriod[]).map((period) => (
+              <button
+                key={period}
+                onClick={() => setSelectedPeriod(period)}
+                className={`px-3 py-1 rounded-lg text-xs transition-colors ${
+                  selectedPeriod === period
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white/5 hover:bg-white/10 text-gray-400'
+                }`}
+              >
+                {period}
+              </button>
+            ))}
           </div>
         </div>
 
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
+            <AreaChart data={displayChartData}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />

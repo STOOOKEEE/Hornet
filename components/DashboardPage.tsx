@@ -71,22 +71,6 @@ export function DashboardPage({ onBackToHome }: DashboardPageProps) {
             <WalletConnect />
           </div>
 
-          {/* Info Banner */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4"
-          >
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-gray-300">
-                <strong className="text-white">Getting Started:</strong> Connect your wallet,
-                deposit USDC, and let our AI find the best yield opportunities across Base
-                protocols. Zero lock-up periods, withdraw anytime.
-              </div>
-            </div>
-          </motion.div>
 
           {/* Performance Overview */}
           <div className="mb-8">

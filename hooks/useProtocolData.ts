@@ -1,6 +1,7 @@
-import { useAccount, useContractReads, useBalance } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { base } from 'wagmi/chains';
+import { CONTRACTS } from '../lib/contracts/addresses';
 
 // Interfaces pour typer nos données
 interface ProtocolData {
@@ -19,14 +20,6 @@ interface UserMetrics {
     value: bigint;
   }>;
 }
-
-// Adresses des contrats sur Base
-const CONTRACTS = {
-  // TODO: Remplacer par les vraies adresses des protocoles sur Base
-  MOONWELL: '0x...',
-  AERODROME: '0x...',
-  // Ajouter d'autres protocoles si nécessaire
-};
 
 export function useProtocolData(): {
   protocolsData: ProtocolData[];
@@ -77,26 +70,30 @@ export function useUserMetrics(): {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    // Si pas connecté, ne pas afficher de données
     if (!isConnected || !address) {
       setMetrics(null);
       setIsLoading(false);
       return;
     }
 
-    // TODO: Remplacer par de vraies lectures de contrats
+    // TODO: Remplacer par de vraies lectures de contrats smart contracts
+    // Pour l'instant, on affiche uniquement les données réelles du wallet
     const fetchMetrics = async () => {
       try {
-        // Simuler la récupération des données
+        setIsLoading(true);
+        
+        // Données basées sur le wallet réel connecté
         const historicalData = Array.from({ length: 30 }, (_, i) => ({
           timestamp: Date.now() - (29 - i) * 24 * 60 * 60 * 1000,
-          value: BigInt(balance?.value || 0n) * BigInt(100 + i) / BigInt(100)
+          value: balance?.value || 0n
         }));
 
         setMetrics({
           totalValueLocked: balance?.value || 0n,
-          totalEarned: BigInt(45230000000000000n), // 0.0452 ETH
-          currentApy: 7.2,
-          activeStrategy: "Moonwell",
+          totalEarned: 0n, // Sera calculé depuis le smart contract
+          currentApy: 0, // Sera lu depuis le smart contract
+          activeStrategy: "None", // Sera lu depuis le smart contract
           historicalBalances: historicalData
         });
         setIsLoading(false);

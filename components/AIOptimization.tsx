@@ -35,7 +35,7 @@ export function AIOptimization() {
 
               <div>
                 <h4 className="text-white mb-2">Predictive ML</h4>
-                <p className="text-gray-500">Premium models for proactive optimization</p>
+                <p className="text-gray-500">Advanced models for proactive optimization</p>
               </div>
             </div>
           </motion.div>
