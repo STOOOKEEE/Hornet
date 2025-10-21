@@ -20,6 +20,11 @@ contract HornetVault is ReentrancyGuard, Ownable {
     uint256 public performanceFee = 50;
     address public treasury;
 
+    // POOLS
+    IMoonwellPool public moonwellPool;
+    IAerodromePool public aerodromePool;
+    ISeamlessPool public seamlessPool;
+
     // EVENTS
     event Deposited(address indexed user, uint256 amount, uint256 sharesMinted);
     event Withdrawn(address indexed user, uint256 amount, uint256 sharesBurned);
@@ -27,12 +32,16 @@ contract HornetVault is ReentrancyGuard, Ownable {
     event Rebalanced(string newPool);
 
     // CREATION
-    constructor(IERC20 _usdc, address _treasury) {
+    constructor(IERC20 _usdc, address _treasury, address _moonwellPool, address _aerodromePool, address _seamlessPool) {
         usdc = _usdc;
         treasury = _treasury;
+        moonwellPool = IMoonwellPool(_moonwellPool);
+        aerodromePool = IAerodromePool(_aerodromePool);
+        seamlessPool = ISeamlessPool(_seamlessPool);
+
     }
 
-    // FUNCTIONS 
+    // FUNCTIONS VAULT
     function deposit(uint256 amount) external nonReentrant {
         require(amount > 0, "Invalid deposit");
         usdc.safeTransferFrom(msg.sender, address(this), amount);
@@ -64,21 +73,14 @@ contract HornetVault is ReentrancyGuard, Ownable {
         usdc.safeTransfer(msg.sender, withdrawAmount);
         emit Withdrawn(msg.sender, withdrawAmount, shareAmount);
     }
-    //
-    function harvest(uint256 yieldAmount) external onlyOwner {
-        require(yieldAmount > 0, "No yield to harvest");
-
-        // Simule un gain sur le vault (en vrai, ce serait récupéré de pools DeFi)
-        totalAssets += yieldAmount;
-
-        uint256 fee = (yieldAmount * performanceFee) / 10000;
-        if (fee > 0) {
-            usdc.safeTransfer(treasury, fee);
-            totalAssets -= fee; // Retire les frais du total
-        }
-
-        emit Harvested(yieldAmount, fee);
+    
+    // FUNCTIONS POOLS
+    function depositToPool(address pool, uint256 amount) external onlyOwner {
+        usdc.safeApprove(pool, 0);          
+        usdc.safeApprove(pool, amount);     
+        IPool(pool).deposit(amount);
     }
+
 
 
 
