@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import Hornet from '../styles/Hornet.png';
+import Image from 'next/image';
 
 interface NavbarProps {
   onLaunchApp: () => void;
@@ -32,8 +34,14 @@ export function Navbar({ onLaunchApp }: NavbarProps) {
           whileHover={{ scale: 1.02 }}
           className="flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-            <span className="text-white text-lg font-bold">H</span>
+          <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center relative">
+            <Image
+              src={Hornet}
+              alt="Hornet"
+              layout="fill"
+              objectFit="cover"
+              className="object-center"
+            />
           </div>
           <span className="text-xl text-white">Hornet</span>
         </motion.div>
