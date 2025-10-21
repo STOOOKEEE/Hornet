@@ -4,10 +4,25 @@ import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
+import { useRebalanceData } from '../../hooks/useRebalanceData';
 
 export function RebalanceCard() {
+  const { data, isLoading } = useRebalanceData();
   const [autoRebalance, setAutoRebalance] = useState(false);
   const [isRebalancing, setIsRebalancing] = useState(false);
+
+  // Calculer le temps depuis le dernier rebalancing
+  const getTimeSinceLastRebalance = () => {
+    if (!data.lastRebalanceTime) return "Never";
+    
+    const now = Date.now();
+    const diff = now - data.lastRebalanceTime;
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+    
+    if (days === 0) return "Today";
+    if (days === 1) return "1 day ago";
+    return `${days} days ago`;
+  };
 
   const handleRebalance = () => {
     setIsRebalancing(true);
@@ -64,14 +79,14 @@ export function RebalanceCard() {
             <Clock className="w-4 h-4 text-gray-400" />
             <div className="text-xs text-gray-400">Last Rebalance</div>
           </div>
-          <div className="text-sm">3 days ago</div>
+          <div className="text-sm">{getTimeSinceLastRebalance()}</div>
         </div>
         <div className="bg-white/5 rounded-xl p-4 border border-white/5">
           <div className="flex items-center gap-2 mb-1">
             <Settings className="w-4 h-4 text-gray-400" />
             <div className="text-xs text-gray-400">Total Rebalances</div>
           </div>
-          <div className="text-sm">12 times</div>
+          <div className="text-sm">{data.totalRebalances} times</div>
         </div>
       </div>
 
@@ -83,18 +98,26 @@ export function RebalanceCard() {
           </div>
           <div className="flex-1">
             <div className="text-sm mb-1">Recommended Action</div>
-            <p className="text-xs text-gray-400 mb-3">
-              Move funds to Aerodrome Finance to capture +2.3% higher APY. Estimated gas:
-              ~$0.02
-            </p>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                Moonwell → Aerodrome
-              </Badge>
-              <Badge variant="secondary" className="text-xs text-green-400">
-                +2.3% APY
-              </Badge>
-            </div>
+            {data.recommendedAction ? (
+              <>
+                <p className="text-xs text-gray-400 mb-3">
+                  Move funds to {data.recommendedAction.to} to capture +{data.recommendedAction.apyGain}% higher APY. Estimated gas:
+                  ~{data.recommendedAction.estimatedGas}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {data.recommendedAction.from} → {data.recommendedAction.to}
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs text-green-400">
+                    +{data.recommendedAction.apyGain}% APY
+                  </Badge>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-gray-400">
+                No rebalancing needed at the moment. Your funds are optimally allocated.
+              </p>
+            )}
           </div>
         </div>
       </div>

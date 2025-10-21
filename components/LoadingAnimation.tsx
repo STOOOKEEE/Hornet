@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import Image from 'next/image';
+import Hornet from '../styles/Hornet.png';
 
 interface LoadingAnimationProps {
   onLaunchApp: () => void;
@@ -63,8 +65,14 @@ export function LoadingAnimation({ onLaunchApp }: LoadingAnimationProps) {
               delay: 2
             }}
           >
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center drop-shadow-2xl">
-              <span className="text-white text-5xl font-bold">H</span>
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden flex items-center justify-center drop-shadow-2xl relative">
+              <Image
+                src={Hornet}
+                alt="Hornet Logo"
+                layout="fill"
+                objectFit="cover"
+                className="object-center"
+              />
             </div>
           </motion.div>
         </motion.div>

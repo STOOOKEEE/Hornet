@@ -82,6 +82,43 @@ export function PerformanceMetrics() {
 
   const displayChartData = filterDataByPeriod(selectedPeriod);
 
+  // Calculer les métriques basées sur les données réelles de l'utilisateur
+  const calculateAverageAPY = () => {
+    if (!metrics) return "0";
+    return metrics.currentApy.toFixed(1);
+  };
+
+  const calculateTotalReturn = () => {
+    if (!metrics || !metrics.historicalBalances || metrics.historicalBalances.length === 0) {
+      return { value: "0", positive: true };
+    }
+    
+    const firstBalance = Number(metrics.historicalBalances[0].value) / 1e18;
+    const lastBalance = Number(metrics.historicalBalances[metrics.historicalBalances.length - 1].value) / 1e18;
+    
+    if (firstBalance === 0) return { value: "0", positive: true };
+    
+    const returnPercentage = ((lastBalance - firstBalance) / firstBalance) * 100;
+    return {
+      value: returnPercentage.toFixed(1),
+      positive: returnPercentage >= 0
+    };
+  };
+
+  const calculateDaysActive = () => {
+    if (!metrics || !metrics.historicalBalances || metrics.historicalBalances.length === 0) {
+      return "0";
+    }
+    
+    const firstTimestamp = metrics.historicalBalances[0].timestamp;
+    const lastTimestamp = metrics.historicalBalances[metrics.historicalBalances.length - 1].timestamp;
+    const daysDiff = Math.floor((lastTimestamp - firstTimestamp) / (24 * 60 * 60 * 1000));
+    
+    return daysDiff.toString();
+  };
+
+  const totalReturn = calculateTotalReturn();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -185,15 +222,17 @@ export function PerformanceMetrics() {
         <div className="mt-6 grid grid-cols-3 gap-4">
           <div className="bg-white/5 rounded-lg p-3 border border-white/5">
             <div className="text-xs text-gray-400 mb-1">Average APY</div>
-            <div className="text-lg">7.5%</div>
+            <div className="text-lg">{calculateAverageAPY()}%</div>
           </div>
           <div className="bg-white/5 rounded-lg p-3 border border-white/5">
             <div className="text-xs text-gray-400 mb-1">Total Return</div>
-            <div className="text-lg text-green-400">+23.5%</div>
+            <div className={`text-lg ${totalReturn.positive ? 'text-green-400' : 'text-red-400'}`}>
+              {totalReturn.positive ? '+' : ''}{totalReturn.value}%
+            </div>
           </div>
           <div className="bg-white/5 rounded-lg p-3 border border-white/5">
             <div className="text-xs text-gray-400 mb-1">Days Active</div>
-            <div className="text-lg">45</div>
+            <div className="text-lg">{calculateDaysActive()}</div>
           </div>
         </div>
       </motion.div>

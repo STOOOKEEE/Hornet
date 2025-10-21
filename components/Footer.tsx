@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Twitter, Github, MessageCircle } from "lucide-react";
+import Image from 'next/image';
+import Hornet from '../styles/Hornet.png';
 
 export function Footer() {
   return (
@@ -8,8 +10,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-16">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <span className="text-white text-lg font-bold">H</span>
+              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center relative">
+                <Image
+                  src={Hornet}
+                  alt="Hornet Logo"
+                  layout="fill"
+                  objectFit="cover"
+                  className="object-center"
+                />
               </div>
               <span className="text-xl text-white">Hornet</span>
             </div>
