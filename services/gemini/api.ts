@@ -27,9 +27,19 @@ export class GeminiAPI {
   }
 
   /**
-   * Envoie une requête à l'API Gemini avec timeout
+   * Sleep utility for retry delays
    */
-  private async sendRequest(prompt: string, systemInstruction?: string): Promise<string> {
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Envoie une requête à l'API Gemini avec timeout et retry
+   */
+  private async sendRequest(prompt: string, systemInstruction?: string, retryCount = 0): Promise<string> {
+    const maxRetries = 3;
+    const baseDelay = 2000; // 2 seconds
+    
     try {
       const contents: GeminiMessage[] = [];
       
@@ -120,7 +130,19 @@ export class GeminiAPI {
         throw fetchError;
       }
     } catch (error) {
-      console.error('Erreur lors de la requête Gemini:', error);
+      // Check if it's a 503 error (service overloaded) or 429 (rate limit)
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const is503 = errorMessage.includes('503') || errorMessage.includes('overloaded');
+      const is429 = errorMessage.includes('429') || errorMessage.includes('rate limit');
+      
+      if ((is503 || is429) && retryCount < maxRetries) {
+        const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+        console.warn(`⚠️ Gemini ${is503 ? 'overloaded' : 'rate limited'} (attempt ${retryCount + 1}/${maxRetries}). Retrying in ${delay}ms...`);
+        await this.sleep(delay);
+        return this.sendRequest(prompt, systemInstruction, retryCount + 1);
+      }
+      
+      console.error('❌ Erreur lors de la requête Gemini:', error);
       throw error;
     }
   }
