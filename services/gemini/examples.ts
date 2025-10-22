@@ -1,8 +1,8 @@
 /**
- * Exemples d'utilisation du service Grok pour analyser les pools DeFiLlama
+ * Exemples d'utilisation du service Gemini pour analyser les pools DeFiLlama
  */
 
-import { GrokAPI } from './api';
+import { GeminiAPI } from './api';
 import { DeFiLlamaAPI } from '../defillama/api';
 import { Pool } from '../defillama/types';
 
@@ -17,13 +17,13 @@ export async function analyzeTopPools(apiKey: string) {
   
   console.log(`✅ ${pools.length} pools récupérés\n`);
   
-  // Initialiser Grok
-  const grok = new GrokAPI({ apiKey });
+  // Initialiser Gemini
+  const gemini = new GeminiAPI({ apiKey });
   
-  console.log('🤖 Analyse des pools avec Grok...\n');
+  console.log('🤖 Analyse des pools avec Gemini...\n');
   
   // Analyser les pools
-  const analysis = await grok.analyzePools({
+  const analysis = await gemini.analyzePools({
     pools,
     criteria: {
       riskTolerance: 'medium',
@@ -87,13 +87,13 @@ export async function analyzeStablecoinPools(apiKey: string) {
   
   console.log(`✅ ${topStable.length} pools stablecoins récupérés\n`);
   
-  // Initialiser Grok
-  const grok = new GrokAPI({ apiKey });
+  // Initialiser Gemini
+  const gemini = new GeminiAPI({ apiKey });
   
-  console.log('🤖 Analyse avec Grok...\n');
+  console.log('🤖 Analyse avec Gemini...\n');
   
   // Analyser avec critères conservateurs
-  const analysis = await grok.analyzePools({
+  const analysis = await gemini.analyzePools({
     pools: topStable,
     criteria: {
       riskTolerance: 'low',
@@ -121,133 +121,7 @@ export async function analyzeStablecoinPools(apiKey: string) {
 }
 
 /**
- * Exemple 3: Comparer deux pools spécifiques
- */
-export async function compareTwoPools(apiKey: string, poolId1: string, poolId2: string) {
-  console.log('🔍 Récupération des pools...\n');
-  
-  const pool1 = await DeFiLlamaAPI.getPoolById(poolId1);
-  const pool2 = await DeFiLlamaAPI.getPoolById(poolId2);
-  
-  if (!pool1 || !pool2) {
-    console.log('❌ Un ou plusieurs pools non trouvés');
-    return;
-  }
-  
-  console.log('✅ Pools récupérés\n');
-  
-  const grok = new GrokAPI({ apiKey });
-  
-  console.log('🤖 Comparaison avec Grok...\n');
-  
-  const comparison = await grok.comparePools(pool1, pool2);
-  
-  console.log('📊 COMPARAISON DES POOLS\n');
-  console.log('='.repeat(60));
-  console.log(comparison);
-  
-  return comparison;
-}
-
-/**
- * Exemple 4: Obtenir des insights sur le marché
- */
-export async function getMarketAnalysis(apiKey: string, chain?: string) {
-  console.log('🔍 Récupération des données du marché...\n');
-  
-  let pools: Pool[];
-  
-  if (chain) {
-    pools = await DeFiLlamaAPI.getPoolsByChain(chain);
-    console.log(`✅ ${pools.length} pools récupérés sur ${chain}\n`);
-  } else {
-    pools = await DeFiLlamaAPI.getAllPools();
-    console.log(`✅ ${pools.length} pools récupérés (toutes chaînes)\n`);
-  }
-  
-  const grok = new GrokAPI({ apiKey });
-  
-  console.log('🤖 Analyse du marché avec Grok...\n');
-  
-  const insights = await grok.getMarketInsights(pools);
-  
-  console.log('📊 ANALYSE DU MARCHÉ\n');
-  console.log('='.repeat(60));
-  console.log(insights);
-  
-  return insights;
-}
-
-/**
- * Exemple 5: Évaluer le risque d'un pool spécifique
- */
-export async function evaluatePoolRisk(apiKey: string, poolId: string) {
-  console.log('🔍 Récupération du pool...\n');
-  
-  const pool = await DeFiLlamaAPI.getPoolById(poolId);
-  
-  if (!pool) {
-    console.log('❌ Pool non trouvé');
-    return;
-  }
-  
-  console.log(`✅ Pool récupéré: ${pool.project} - ${pool.symbol}\n`);
-  
-  const grok = new GrokAPI({ apiKey });
-  
-  console.log('🤖 Évaluation des risques avec Grok...\n');
-  
-  const riskAnalysis = await grok.evaluatePoolRisk(pool);
-  
-  console.log('📊 ÉVALUATION DES RISQUES\n');
-  console.log('='.repeat(60));
-  console.log(riskAnalysis);
-  
-  return riskAnalysis;
-}
-
-/**
- * Exemple 6: Générer une stratégie d'investissement
- */
-export async function generateStrategy(
-  apiKey: string,
-  budget: number,
-  riskProfile: 'conservative' | 'moderate' | 'aggressive'
-) {
-  console.log('🔍 Récupération des pools pour la stratégie...\n');
-  
-  // Récupérer différents types de pools selon le profil
-  let pools: Pool[];
-  
-  if (riskProfile === 'conservative') {
-    pools = await DeFiLlamaAPI.getStablecoinPools(1000000);
-  } else if (riskProfile === 'moderate') {
-    const stable = await DeFiLlamaAPI.getStablecoinPools(500000);
-    const topPools = await DeFiLlamaAPI.getTopPoolsByApy(30, 500000);
-    pools = [...stable.slice(0, 10), ...topPools.slice(0, 10)];
-  } else {
-    pools = await DeFiLlamaAPI.getTopPoolsByApy(50, 100000);
-  }
-  
-  console.log(`✅ ${pools.length} pools sélectionnés\n`);
-  
-  const grok = new GrokAPI({ apiKey });
-  
-  console.log('🤖 Génération de la stratégie avec Grok...\n');
-  
-  const strategy = await grok.generateInvestmentStrategy(pools, budget, riskProfile);
-  
-  console.log('📊 STRATÉGIE D\'INVESTISSEMENT\n');
-  console.log('='.repeat(60));
-  console.log(`Budget: $${budget.toLocaleString()}`);
-  console.log(`Profil: ${riskProfile.toUpperCase()}\n`);
-  console.log(strategy);
-  
-  return strategy;
-}
-
-/**
- * Exemple 7: Workflow complet - De la recherche à la recommandation
+ * Exemple 3: Workflow complet - De la recherche à la recommandation
  */
 export async function completeWorkflow(apiKey: string) {
   console.log('🚀 WORKFLOW COMPLET D\'ANALYSE\n');
@@ -259,11 +133,11 @@ export async function completeWorkflow(apiKey: string) {
     const allPools = await DeFiLlamaAPI.getTopPoolsByApy(30, 500000);
     console.log(`✅ ${allPools.length} pools récupérés`);
     
-    // Étape 2: Analyser avec Grok
-    console.log('\n🤖 Étape 2: Analyse avec Grok...');
-    const grok = new GrokAPI({ apiKey });
+    // Étape 2: Analyser avec Gemini
+    console.log('\n🤖 Étape 2: Analyse avec Gemini...');
+    const gemini = new GeminiAPI({ apiKey });
     
-    const analysis = await grok.analyzePools({
+    const analysis = await gemini.analyzePools({
       pools: allPools,
       criteria: {
         riskTolerance: 'medium',
@@ -289,12 +163,12 @@ export async function completeWorkflow(apiKey: string) {
     // Étape 4: Évaluation détaillée du meilleur pool
     console.log('\n🔍 Étape 4: Évaluation détaillée du meilleur pool...');
     const bestPool = analysis.recommendations[0].pool;
-    const riskEval = await grok.evaluatePoolRisk(bestPool);
+    const riskEval = await gemini.evaluatePoolRisk(bestPool);
     console.log('\n' + riskEval);
     
     // Étape 5: Stratégie d'investissement
     console.log('\n💼 Étape 5: Génération de la stratégie d\'investissement...');
-    const strategy = await grok.generateInvestmentStrategy(
+    const strategy = await gemini.generateInvestmentStrategy(
       analysis.recommendations.slice(0, 5).map(r => r.pool),
       10000,
       'moderate'
@@ -317,9 +191,9 @@ export async function completeWorkflow(apiKey: string) {
 /**
  * Fonction principale pour exécuter les exemples
  */
-export async function runGrokExamples(apiKey: string) {
+export async function runGeminiExamples(apiKey: string) {
   console.log('='.repeat(60));
-  console.log('EXEMPLES D\'UTILISATION DE GROK AVEC DEFILLAMA');
+  console.log('EXEMPLES D\'UTILISATION DE GEMINI AVEC DEFILLAMA');
   console.log('='.repeat(60));
   
   try {

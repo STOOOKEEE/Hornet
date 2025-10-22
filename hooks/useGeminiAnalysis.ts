@@ -1,21 +1,21 @@
 /**
- * Hook React pour utiliser l'API Grok via les routes API
+ * Hook React pour utiliser l'API Gemini via les routes API
  */
 
 import { useState, useCallback } from 'react';
 import { Pool } from '@/services/defillama/types';
-import { PoolAnalysisResponse, PoolAnalysisRequest } from '@/services/grok/types';
+import { PoolAnalysisResponse, PoolAnalysisRequest } from '@/services/gemini/types';
 
-interface UseGrokAnalysisState {
+interface UseGeminiAnalysisState {
   loading: boolean;
   error: Error | null;
 }
 
 /**
- * Hook pour analyser les pools avec Grok
+ * Hook pour analyser les pools avec Gemini
  */
-export function useGrokAnalysis() {
-  const [state, setState] = useState<UseGrokAnalysisState>({
+export function useGeminiAnalysis() {
+  const [state, setState] = useState<UseGeminiAnalysisState>({
     loading: false,
     error: null,
   });
@@ -24,7 +24,7 @@ export function useGrokAnalysis() {
     try {
       setState({ loading: true, error: null });
 
-      const response = await fetch('/api/grok/analyze-pools', {
+      const response = await fetch('/api/gemini/analyze-pools', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export function useGrokAnalysis() {
     try {
       setState({ loading: true, error: null });
 
-      const response = await fetch('/api/grok/compare-pools', {
+      const response = await fetch('/api/gemini/compare-pools', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export function useGrokAnalysis() {
     try {
       setState({ loading: true, error: null });
 
-      const response = await fetch('/api/grok/market-insights', {
+      const response = await fetch('/api/gemini/market-insights', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export function useGrokAnalysis() {
     try {
       setState({ loading: true, error: null });
 
-      const response = await fetch('/api/grok/evaluate-risk', {
+      const response = await fetch('/api/gemini/evaluate-risk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export function useGrokAnalysis() {
     try {
       setState({ loading: true, error: null });
 
-      const response = await fetch('/api/grok/generate-strategy', {
+      const response = await fetch('/api/gemini/generate-strategy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

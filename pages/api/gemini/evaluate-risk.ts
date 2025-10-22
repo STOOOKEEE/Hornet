@@ -1,10 +1,10 @@
 /**
- * API Route pour évaluer le risque d'un pool avec Grok
- * POST /api/grok/evaluate-risk
+ * API Route pour évaluer le risque d'un pool avec Gemini
+ * POST /api/gemini/evaluate-risk
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GrokAPI } from '@/services/grok';
+import { GeminiAPI } from '@/services/gemini';
 import { Pool } from '@/services/defillama/types';
 
 interface EvaluateRiskRequest {
@@ -20,9 +20,9 @@ export default async function handler(
   }
 
   try {
-    const apiKey = process.env.GROK_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: 'GROK_API_KEY not configured' });
+      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
 
     const { pool } = req.body as EvaluateRiskRequest;
@@ -31,8 +31,8 @@ export default async function handler(
       return res.status(400).json({ error: 'Pool data is required' });
     }
 
-    const grok = new GrokAPI({ apiKey });
-    const riskAnalysis = await grok.evaluatePoolRisk(pool);
+    const gemini = new GeminiAPI({ apiKey });
+    const riskAnalysis = await gemini.evaluatePoolRisk(pool);
 
     res.status(200).json({ riskAnalysis });
   } catch (error) {

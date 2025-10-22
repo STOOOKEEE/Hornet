@@ -1,12 +1,12 @@
 /**
- * Dashboard pour l'analyse des pools avec Grok
+ * Dashboard pour l'analyse des pools avec Gemini
  */
 
 import React, { useState } from 'react';
 import { useTopPools } from '@/hooks/useDeFiLlama';
-import { useGrokAnalysis } from '@/hooks/useGrokAnalysis';
+import { useGeminiAnalysis } from '@/hooks/useGeminiAnalysis';
 import { Pool } from '@/services/defillama/types';
-import { PoolRecommendation } from '@/services/grok/types';
+import { PoolRecommendation } from '@/services/gemini/types';
 
 /**
  * Composant pour afficher une recommandation
@@ -97,7 +97,7 @@ const RecommendationCard: React.FC<{ recommendation: PoolRecommendation; rank: n
 /**
  * Dashboard principal
  */
-export const GrokAnalysisDashboard: React.FC = () => {
+export const GeminiAnalysisDashboard: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
   const [riskTolerance, setRiskTolerance] = useState<'low' | 'medium' | 'high'>('medium');
@@ -105,7 +105,7 @@ export const GrokAnalysisDashboard: React.FC = () => {
   const [minTvl, setMinTvl] = useState(1000000);
 
   const { pools, loading: loadingPools, error: poolsError } = useTopPools(30, 500000);
-  const { analyzePools, loading: grokLoading, error: grokError } = useGrokAnalysis();
+  const { analyzePools, loading: geminiLoading, error: geminiError } = useGeminiAnalysis();
 
   const handleAnalyze = async () => {
     if (pools.length === 0) return;
@@ -157,7 +157,7 @@ export const GrokAnalysisDashboard: React.FC = () => {
             Analyse IA des Pools DeFi
           </h1>
           <p className="text-gray-600">
-            Powered by Grok AI - Recommandations intelligentes basées sur vos critères
+            Powered by Gemini AI - Recommandations intelligentes basées sur vos critères
           </p>
         </header>
 
@@ -205,10 +205,10 @@ export const GrokAnalysisDashboard: React.FC = () => {
           <div className="mt-6">
             <button
               onClick={handleAnalyze}
-              disabled={analyzing || grokLoading || pools.length === 0}
+              disabled={analyzing || geminiLoading || pools.length === 0}
               className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 transition-all shadow-md hover:shadow-lg"
             >
-              {analyzing || grokLoading ? (
+              {analyzing || geminiLoading ? (
                 <span className="flex items-center justify-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -217,15 +217,15 @@ export const GrokAnalysisDashboard: React.FC = () => {
                   Analyse en cours...
                 </span>
               ) : (
-                `🤖 Analyser ${pools.length} pools avec Grok AI`
+                `🤖 Analyser ${pools.length} pools avec Gemini AI`
               )}
             </button>
           </div>
 
-          {grokError && (
+          {geminiError && (
             <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-800 text-sm">
-                <strong>Erreur:</strong> {grokError.message}
+                <strong>Erreur:</strong> {geminiError.message}
               </p>
             </div>
           )}
@@ -298,4 +298,4 @@ export const GrokAnalysisDashboard: React.FC = () => {
   );
 };
 
-export default GrokAnalysisDashboard;
+export default GeminiAnalysisDashboard;

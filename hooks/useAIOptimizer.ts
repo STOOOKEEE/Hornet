@@ -50,6 +50,9 @@ export function useAIOptimizer() {
         console.error('Error fetching AI strategies:', err);
         
         // Données de fallback si le serveur n'est pas disponible
+        // TODO: Vérifier si l'utilisateur a des fonds stakés sur la blockchain
+        const isStaked = false; // À lire depuis le smart contract
+        
         setData({
           strategies: [
             {
@@ -71,8 +74,8 @@ export function useAIOptimizer() {
               gain: "+1.4%"
             }
           ],
-          currentStrategy: "None",
-          currentAPY: 0
+          currentStrategy: isStaked ? "AI Optimized" : "None",
+          currentAPY: isStaked ? 8.5 : 0 // APY à 0 si pas de staking
         });
         setIsLoading(false);
         setError(err instanceof Error ? err : new Error('Unknown error'));

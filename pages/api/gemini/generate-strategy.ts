@@ -1,10 +1,10 @@
 /**
- * API Route pour générer une stratégie d'investissement avec Grok
- * POST /api/grok/generate-strategy
+ * API Route pour générer une stratégie d'investissement avec Gemini
+ * POST /api/gemini/generate-strategy
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GrokAPI } from '@/services/grok';
+import { GeminiAPI } from '@/services/gemini';
 import { Pool } from '@/services/defillama/types';
 
 interface GenerateStrategyRequest {
@@ -22,9 +22,9 @@ export default async function handler(
   }
 
   try {
-    const apiKey = process.env.GROK_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: 'GROK_API_KEY not configured' });
+      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
 
     const { pools, budget, riskProfile } = req.body as GenerateStrategyRequest;
@@ -41,8 +41,8 @@ export default async function handler(
       return res.status(400).json({ error: 'Invalid risk profile' });
     }
 
-    const grok = new GrokAPI({ apiKey });
-    const strategy = await grok.generateInvestmentStrategy(pools, budget, riskProfile);
+    const gemini = new GeminiAPI({ apiKey });
+    const strategy = await gemini.generateInvestmentStrategy(pools, budget, riskProfile);
 
     res.status(200).json({ strategy });
   } catch (error) {

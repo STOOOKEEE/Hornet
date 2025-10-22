@@ -1,19 +1,19 @@
-# Service Grok pour l'analyse des pools DeFiLlama
+# Service Gemini pour l'analyse des pools DeFiLlama
 
-Ce service utilise l'API Grok (xAI) pour analyser les données des pools de liquidité DeFiLlama et fournir des recommandations intelligentes basées sur l'IA.
+Ce service utilise l'API Gemini (Google AI) pour analyser les données des pools de liquidité DeFiLlama et fournir des recommandations intelligentes basées sur l'IA.
 
 ## Configuration
 
-### 1. Obtenir une clé API Grok
+### 1. Obtenir une clé API Gemini
 
-Visitez [console.x.ai](https://console.x.ai) pour obtenir votre clé API.
+Visitez [Google AI Studio](https://makersuite.google.com/app/apikey) pour obtenir votre clé API gratuite.
 
 ### 2. Configurer la clé API
 
 Ajoutez votre clé API dans votre fichier `.env.local`:
 
 ```env
-GROK_API_KEY=votre_cle_api_ici
+GEMINI_API_KEY=votre_cle_api_ici
 ```
 
 ## Installation
@@ -25,11 +25,11 @@ Aucune dépendance supplémentaire requise. Le service utilise l'API fetch nativ
 ### Initialisation
 
 ```typescript
-import { GrokAPI } from '@/services/grok';
+import { GeminiAPI } from '@/services/gemini';
 
-const grok = new GrokAPI({
-  apiKey: process.env.GROK_API_KEY || '',
-  model: 'grok-beta', // optionnel
+const gemini = new GeminiAPI({
+  apiKey: process.env.GEMINI_API_KEY || '',
+  model: 'gemini-pro', // optionnel, par défaut
 });
 ```
 
@@ -37,15 +37,15 @@ const grok = new GrokAPI({
 
 ```typescript
 import { DeFiLlamaAPI } from '@/services/defillama';
-import { GrokAPI } from '@/services/grok';
+import { GeminiAPI } from '@/services/gemini';
 
 // Récupérer les pools
 const pools = await DeFiLlamaAPI.getTopPoolsByApy(20, 1000000);
 
-// Analyser avec Grok
-const grok = new GrokAPI({ apiKey: process.env.GROK_API_KEY });
+// Analyser avec Gemini
+const gemini = new GeminiAPI({ apiKey: process.env.GEMINI_API_KEY });
 
-const analysis = await grok.analyzePools({
+const analysis = await gemini.analyzePools({
   pools,
   criteria: {
     riskTolerance: 'medium',
@@ -76,7 +76,7 @@ const pool1 = await DeFiLlamaAPI.getPoolById('pool-id-1');
 const pool2 = await DeFiLlamaAPI.getPoolById('pool-id-2');
 
 if (pool1 && pool2) {
-  const comparison = await grok.comparePools(pool1, pool2);
+  const comparison = await gemini.comparePools(pool1, pool2);
   console.log(comparison);
 }
 ```
@@ -86,12 +86,12 @@ if (pool1 && pool2) {
 ```typescript
 // Analyser tout le marché
 const allPools = await DeFiLlamaAPI.getAllPools();
-const insights = await grok.getMarketInsights(allPools);
+const insights = await gemini.getMarketInsights(allPools);
 console.log(insights);
 
 // Ou analyser une chaîne spécifique
 const ethPools = await DeFiLlamaAPI.getPoolsByChain('Ethereum');
-const ethInsights = await grok.getMarketInsights(ethPools);
+const ethInsights = await gemini.getMarketInsights(ethPools);
 console.log(ethInsights);
 ```
 
@@ -101,7 +101,7 @@ console.log(ethInsights);
 const pool = await DeFiLlamaAPI.getPoolById('pool-id');
 
 if (pool) {
-  const riskAnalysis = await grok.evaluatePoolRisk(pool);
+  const riskAnalysis = await gemini.evaluatePoolRisk(pool);
   console.log(riskAnalysis);
 }
 ```
@@ -113,7 +113,7 @@ if (pool) {
 const pools = await DeFiLlamaAPI.getTopPoolsByApy(30, 500000);
 
 // Générer la stratégie
-const strategy = await grok.generateInvestmentStrategy(
+const strategy = await gemini.generateInvestmentStrategy(
   pools,
   10000, // Budget en USD
   'moderate' // 'conservative' | 'moderate' | 'aggressive'
@@ -127,9 +127,9 @@ console.log(strategy);
 ### Workflow complet: De la recherche à la recommandation
 
 ```typescript
-import { completeWorkflow } from '@/services/grok/examples';
+import { completeWorkflow } from '@/services/gemini/examples';
 
-const result = await completeWorkflow(process.env.GROK_API_KEY);
+const result = await completeWorkflow(process.env.GEMINI_API_KEY);
 
 // Résultat contient:
 // - analysis: Analyse complète avec recommandations
@@ -140,17 +140,17 @@ const result = await completeWorkflow(process.env.GROK_API_KEY);
 ### Analyser les meilleurs pools
 
 ```typescript
-import { analyzeTopPools } from '@/services/grok/examples';
+import { analyzeTopPools } from '@/services/gemini/examples';
 
-const analysis = await analyzeTopPools(process.env.GROK_API_KEY);
+const analysis = await analyzeTopPools(process.env.GEMINI_API_KEY);
 ```
 
 ### Analyser les pools stablecoins
 
 ```typescript
-import { analyzeStablecoinPools } from '@/services/grok/examples';
+import { analyzeStablecoinPools } from '@/services/gemini/examples';
 
-const analysis = await analyzeStablecoinPools(process.env.GROK_API_KEY);
+const analysis = await analyzeStablecoinPools(process.env.GEMINI_API_KEY);
 ```
 
 ## Types de données
@@ -203,7 +203,7 @@ interface PoolRecommendation {
 ```typescript
 const stablePools = await DeFiLlamaAPI.getStablecoinPools(1000000);
 
-const analysis = await grok.analyzePools({
+const analysis = await gemini.analyzePools({
   pools: stablePools,
   criteria: {
     riskTolerance: 'low',
@@ -219,7 +219,7 @@ const analysis = await grok.analyzePools({
 ```typescript
 const highYieldPools = await DeFiLlamaAPI.getTopPoolsByApy(50, 100000);
 
-const analysis = await grok.analyzePools({
+const analysis = await gemini.analyzePools({
   pools: highYieldPools,
   criteria: {
     riskTolerance: 'high',
@@ -240,7 +240,7 @@ for (const chain of chains) {
   allPools.push(...chainPools.slice(0, 10));
 }
 
-const analysis = await grok.analyzePools({
+const analysis = await gemini.analyzePools({
   pools: allPools,
   criteria: {
     riskTolerance: 'medium',
@@ -251,29 +251,13 @@ const analysis = await grok.analyzePools({
 });
 ```
 
-### 4. Analyse de marché quotidienne
-
-```typescript
-// Script à exécuter quotidiennement
-async function dailyMarketAnalysis() {
-  const topPools = await DeFiLlamaAPI.getTopPoolsByApy(100, 500000);
-  const grok = new GrokAPI({ apiKey: process.env.GROK_API_KEY });
-  
-  const insights = await grok.getMarketInsights(topPools);
-  
-  // Envoyer par email, Slack, Discord, etc.
-  console.log('📊 Analyse quotidienne du marché DeFi');
-  console.log(insights);
-}
-```
-
 ## Bonnes pratiques
 
 ### 1. Gestion des erreurs
 
 ```typescript
 try {
-  const analysis = await grok.analyzePools({ pools });
+  const analysis = await gemini.analyzePools({ pools });
   // Traiter les résultats
 } catch (error) {
   console.error('Erreur lors de l\'analyse:', error);
@@ -296,7 +280,7 @@ async function getCachedAnalysis(pools: Pool[]) {
     return cachedAnalysis;
   }
   
-  cachedAnalysis = await grok.analyzePools({ pools });
+  cachedAnalysis = await gemini.analyzePools({ pools });
   cacheTime = now;
   
   return cachedAnalysis;
@@ -313,40 +297,47 @@ const validPools = pools.filter(pool =>
   pool.apy < 10000 // Filtrer les APY aberrants
 );
 
-const analysis = await grok.analyzePools({ pools: validPools });
+const analysis = await gemini.analyzePools({ pools: validPools });
 ```
 
 ### 4. Limiter le nombre de pools
 
 ```typescript
-// Grok a une limite de tokens, ne pas envoyer trop de pools
+// Gemini a une limite de tokens, ne pas envoyer trop de pools
 const MAX_POOLS = 30;
 const limitedPools = pools.slice(0, MAX_POOLS);
 
-const analysis = await grok.analyzePools({ pools: limitedPools });
+const analysis = await gemini.analyzePools({ pools: limitedPools });
 ```
 
-## Coûts et limites
+## Avantages de Gemini
 
-- **Modèle**: `grok-beta`
-- **Coût**: Vérifiez les tarifs sur [x.ai](https://x.ai)
-- **Limite de tokens**: ~4000 tokens par réponse
-- **Rate limiting**: Respectez les limites de l'API
+✅ **Gratuit**: API gratuite avec quota généreux  
+✅ **Performant**: Modèle Gemini Pro très capable  
+✅ **Multilingue**: Support excellent du français  
+✅ **Contexte large**: Jusqu'à 32k tokens de contexte  
+✅ **Rapide**: Temps de réponse optimisé  
+
+## Limites
+
+- **Quota gratuit**: 60 requêtes par minute
+- **Tokens**: Maximum 32k tokens de contexte
+- **Sécurité**: Filtres de sécurité activés par défaut
 
 ## Sécurité
 
 ⚠️ **Important**:
 - Ne jamais exposer votre clé API côté client
 - Utilisez des variables d'environnement
-- Créez une route API backend pour les appels Grok
+- Créez une route API backend pour les appels Gemini
 - Implémentez une authentification pour vos endpoints
 
 ### Exemple de route API Next.js
 
 ```typescript
-// pages/api/analyze-pools.ts
+// pages/api/gemini/analyze-pools.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GrokAPI } from '@/services/grok';
+import { GeminiAPI } from '@/services/gemini';
 
 export default async function handler(
   req: NextApiRequest,
@@ -359,11 +350,11 @@ export default async function handler(
   try {
     const { pools, criteria } = req.body;
     
-    const grok = new GrokAPI({
-      apiKey: process.env.GROK_API_KEY!,
+    const gemini = new GeminiAPI({
+      apiKey: process.env.GEMINI_API_KEY!,
     });
     
-    const analysis = await grok.analyzePools({ pools, criteria });
+    const analysis = await gemini.analyzePools({ pools, criteria });
     
     res.status(200).json(analysis);
   } catch (error) {
@@ -378,19 +369,21 @@ export default async function handler(
 ### Erreur: "Invalid API key"
 - Vérifiez que votre clé API est correcte
 - Assurez-vous qu'elle est bien chargée depuis `.env.local`
+- Générez une nouvelle clé sur Google AI Studio
 
-### Erreur: "Rate limit exceeded"
+### Erreur: "Quota exceeded"
+- Attendez quelques minutes (limite: 60 req/min)
 - Implémentez un système de cache
-- Ajoutez des délais entre les requêtes
-- Utilisez un système de queue
+- Passez à un plan payant si nécessaire
 
 ### Erreur: "Unable to parse response"
-- Grok peut parfois retourner du texte au lieu de JSON
+- Gemini peut parfois retourner du texte au lieu de JSON
 - Le service tente de nettoyer la réponse automatiquement
 - Vérifiez `rawResponse` pour déboguer
 
 ## Support
 
 Pour plus d'informations:
-- Documentation Grok: https://docs.x.ai
+- Documentation Gemini: https://ai.google.dev/docs
+- Google AI Studio: https://makersuite.google.com
 - Documentation DeFiLlama: https://defillama.com/docs/api

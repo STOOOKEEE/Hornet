@@ -7,6 +7,7 @@ import { DepositWithdraw } from "./dashboard/DepositWithdraw";
 import { AIOptimizer } from "./dashboard/AIOptimizer";
 import { PerformanceMetrics } from "./dashboard/PerformanceMetrics";
 import { RebalanceCard } from "./dashboard/RebalanceCard";
+import { RiskSelector } from "./dashboard/RiskSelector";
 
 interface DashboardPageProps {
   onBackToHome: () => void;
@@ -32,9 +33,9 @@ export function DashboardPage({ onBackToHome }: DashboardPageProps) {
             </button>
             <div className="flex items-center gap-3">
               <img 
-                src="/styles/Hornet.png" 
+                src="/hornet.png" 
                 alt="Hornet Logo" 
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-24 h-24 rounded-full object-cover"
               />
               <span className="text-xl">Hornet</span>
             </div>
@@ -77,6 +78,11 @@ export function DashboardPage({ onBackToHome }: DashboardPageProps) {
           {/* Performance Overview */}
           <div className="mb-8">
             <PerformanceMetrics />
+          </div>
+
+          {/* Risk Selector */}
+          <div className="mb-8">
+            <RiskSelector />
           </div>
 
           {/* Main Grid */}

@@ -84,7 +84,12 @@ export function useUserMetrics(): {
         setIsLoading(true);
         
         const currentBalance = balance?.value || 0n;
-        const currentAPY = 8.5; // APY moyen, sera lu depuis le smart contract
+        
+        // TODO: Lire l'APY depuis le smart contract de staking
+        // Pour l'instant, l'APY est 0 si aucun ETH n'est staké
+        const isStaked = false; // TODO: Vérifier depuis le contrat de staking si l'utilisateur a staké
+        const currentAPY = isStaked ? 8.5 : 0; // APY à 0 si pas de staking
+        
         const daysOfHistory = 30;
         
         // Générer des données historiques réalistes avec croissance basée sur l'APY
@@ -115,7 +120,7 @@ export function useUserMetrics(): {
           totalValueLocked: currentBalance,
           totalEarned: totalEarned,
           currentApy: currentAPY,
-          activeStrategy: currentBalance > 0n ? "AI Optimized" : "None",
+          activeStrategy: isStaked ? "AI Optimized" : "None",
           historicalBalances: historicalData
         });
         setIsLoading(false);

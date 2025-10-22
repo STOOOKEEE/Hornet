@@ -1,56 +1,126 @@
 /**
- * Service API pour Grok (xAI)
- * Documentation: https://docs.x.ai/api
+ * Service API pour Gemini (Google AI)
+ * Documentation: https://ai.google.dev/docs
  */
 
 import { Pool } from '../defillama/types';
 import {
-  GrokConfig,
-  GrokRequest,
-  GrokResponse,
+  GeminiConfig,
+  GeminiRequest,
+  GeminiResponse,
+  GeminiMessage,
   PoolAnalysisRequest,
   PoolAnalysisResponse,
   PoolRecommendation,
 } from './types';
 
-const DEFAULT_MODEL = 'grok-beta';
-const DEFAULT_BASE_URL = 'https://api.x.ai/v1';
+const DEFAULT_MODEL = 'gemini-2.5-flash';
+const API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-export class GrokAPI {
+export class GeminiAPI {
   private apiKey: string;
   private model: string;
-  private baseUrl: string;
 
-  constructor(config: GrokConfig) {
+  constructor(config: GeminiConfig) {
     this.apiKey = config.apiKey;
     this.model = config.model || DEFAULT_MODEL;
-    this.baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   }
 
   /**
-   * Envoie une requête à l'API Grok
+   * Envoie une requête à l'API Gemini avec timeout
    */
-  private async sendRequest(request: GrokRequest): Promise<GrokResponse> {
+  private async sendRequest(prompt: string, systemInstruction?: string): Promise<string> {
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify(request),
+      const contents: GeminiMessage[] = [];
+      
+      if (systemInstruction) {
+        contents.push({
+          role: 'user' as const,
+          parts: [{ text: systemInstruction }],
+        });
+        contents.push({
+          role: 'model' as const,
+          parts: [{ text: 'Compris, je vais suivre ces instructions.' }],
+        });
+      }
+      
+      contents.push({
+        role: 'user' as const,
+        parts: [{ text: prompt }],
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Erreur API Grok: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`
-        );
-      }
+      const request: GeminiRequest = {
+        contents,
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 8192,
+        },
+      };
 
-      return await response.json();
+      const url = `${API_BASE_URL}/${this.model}:generateContent?key=${this.apiKey}`;
+
+      // Créer un timeout de 60 secondes
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(request),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            `Erreur API Gemini: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`
+          );
+        }
+
+        const data: GeminiResponse = await response.json();
+        
+        // Log détaillé pour debug
+        console.log('📥 Réponse Gemini reçue:', JSON.stringify(data, null, 2).substring(0, 500));
+        
+        if (!data.candidates || data.candidates.length === 0) {
+          console.error('❌ Aucun candidat dans la réponse:', data);
+          throw new Error('Aucune réponse générée par Gemini');
+        }
+
+        const candidate = data.candidates[0];
+        console.log('📋 Premier candidat:', JSON.stringify(candidate, null, 2).substring(0, 500));
+        
+        // Vérifier si la réponse a été bloquée par les safety filters
+        if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+          console.error('⚠️ Réponse bloquée:', candidate.finishReason);
+          if (candidate.safetyRatings) {
+            console.error('🛡️ Safety ratings:', candidate.safetyRatings);
+          }
+          throw new Error(`Réponse Gemini bloquée: ${candidate.finishReason}`);
+        }
+
+        if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+          console.error('❌ Contenu manquant dans le candidat:', candidate);
+          throw new Error('Réponse Gemini invalide: contenu manquant');
+        }
+
+        return candidate.content.parts[0].text;
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          throw new Error('Timeout: La requête Gemini a pris trop de temps (>60s)');
+        }
+        throw fetchError;
+      }
     } catch (error) {
-      console.error('Erreur lors de la requête Grok:', error);
+      console.error('Erreur lors de la requête Gemini:', error);
       throw error;
     }
   }
@@ -61,7 +131,7 @@ export class GrokAPI {
   async analyzePools(request: PoolAnalysisRequest): Promise<PoolAnalysisResponse> {
     const { pools, criteria, customPrompt } = request;
 
-    // Préparer les données des pools pour Grok
+    // Préparer les données des pools pour Gemini
     const poolsData = pools.map(pool => ({
       id: pool.pool,
       project: pool.project,
@@ -77,8 +147,8 @@ export class GrokAPI {
       rewardTokens: pool.rewardTokens,
     }));
 
-    // Construire le prompt
-    const systemPrompt = `Tu es un expert en finance décentralisée (DeFi) spécialisé dans l'analyse des pools de liquidité et l'optimisation des rendements. 
+    // Construire le prompt système
+    const systemInstruction = `Tu es un expert en finance décentralisée (DeFi) spécialisé dans l'analyse des pools de liquidité et l'optimisation des rendements. 
 Tu dois analyser les pools fournis et recommander les meilleurs en fonction des critères donnés.
 
 Réponds TOUJOURS au format JSON suivant (sans markdown, juste le JSON brut):
@@ -122,23 +192,12 @@ Réponds TOUJOURS au format JSON suivant (sans markdown, juste le JSON brut):
 
     userPrompt += `\n\nVoici les données des pools (${pools.length} pools):\n${JSON.stringify(poolsData, null, 2)}`;
 
-    const grokRequest: GrokRequest = {
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 4000,
-    };
-
-    const response = await this.sendRequest(grokRequest);
-    const content = response.choices[0]?.message?.content || '';
+    const response = await this.sendRequest(userPrompt, systemInstruction);
 
     // Parser la réponse JSON
     try {
       // Nettoyer le contenu pour extraire le JSON
-      let jsonContent = content.trim();
+      let jsonContent = response.trim();
       
       // Retirer les balises markdown si présentes
       if (jsonContent.startsWith('```json')) {
@@ -149,33 +208,46 @@ Réponds TOUJOURS au format JSON suivant (sans markdown, juste le JSON brut):
 
       const parsed = JSON.parse(jsonContent);
 
+      // Valider la structure de la réponse
+      if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
+        throw new Error('La réponse ne contient pas de tableau de recommandations valide');
+      }
+
       // Enrichir les recommandations avec les objets Pool complets
       const recommendations: PoolRecommendation[] = parsed.recommendations.map((rec: any) => {
+        if (!rec.poolId) {
+          throw new Error('Recommandation sans poolId');
+        }
+        
         const pool = pools.find(p => p.pool === rec.poolId);
         if (!pool) {
+          console.warn(`Pool ${rec.poolId} non trouvé dans la liste des pools`);
           throw new Error(`Pool ${rec.poolId} non trouvé`);
         }
+        
         return {
           pool,
-          score: rec.score,
-          reasoning: rec.reasoning,
-          pros: rec.pros,
-          cons: rec.cons,
-          riskLevel: rec.riskLevel,
+          score: rec.score || 0,
+          reasoning: rec.reasoning || 'Aucune explication fournie',
+          pros: Array.isArray(rec.pros) ? rec.pros : [],
+          cons: Array.isArray(rec.cons) ? rec.cons : [],
+          riskLevel: rec.riskLevel || 'medium',
         };
       });
 
       return {
         recommendations,
-        summary: parsed.summary,
-        marketInsights: parsed.marketInsights,
-        warnings: parsed.warnings || [],
-        rawResponse: content,
+        summary: parsed.summary || 'Aucun résumé disponible',
+        marketInsights: parsed.marketInsights || 'Aucun insight disponible',
+        warnings: Array.isArray(parsed.warnings) ? parsed.warnings : [],
+        rawResponse: response,
       };
     } catch (error) {
-      console.error('Erreur lors du parsing de la réponse Grok:', error);
-      console.error('Contenu reçu:', content);
-      throw new Error(`Impossible de parser la réponse de Grok: ${error}`);
+      console.error('Erreur lors du parsing de la réponse Gemini:', error);
+      console.error('Contenu reçu (premiers 500 caractères):', response.substring(0, 500));
+      
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      throw new Error(`Impossible de parser la réponse de Gemini: ${errorMessage}. Vérifiez que l'API retourne bien du JSON valide.`);
     }
   }
 
@@ -183,7 +255,7 @@ Réponds TOUJOURS au format JSON suivant (sans markdown, juste le JSON brut):
    * Compare deux pools spécifiques
    */
   async comparePools(pool1: Pool, pool2: Pool): Promise<string> {
-    const systemPrompt = `Tu es un expert en DeFi. Compare ces deux pools de liquidité et explique lequel est le meilleur et pourquoi.`;
+    const systemInstruction = `Tu es un expert en DeFi. Compare ces deux pools de liquidité et explique lequel est le meilleur et pourquoi.`;
     
     const userPrompt = `Compare ces deux pools:
 
@@ -205,25 +277,14 @@ Pool 2:
 
 Donne une analyse détaillée et une recommandation.`;
 
-    const grokRequest: GrokRequest = {
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 1500,
-    };
-
-    const response = await this.sendRequest(grokRequest);
-    return response.choices[0]?.message?.content || '';
+    return await this.sendRequest(userPrompt, systemInstruction);
   }
 
   /**
    * Obtient des insights sur le marché DeFi
    */
   async getMarketInsights(pools: Pool[]): Promise<string> {
-    const systemPrompt = `Tu es un analyste DeFi expert. Analyse les tendances du marché basées sur les pools fournis.`;
+    const systemInstruction = `Tu es un analyste DeFi expert. Analyse les tendances du marché basées sur les pools fournis.`;
     
     // Calculer des statistiques
     const avgApy = pools.reduce((sum, p) => sum + p.apy, 0) / pools.length;
@@ -249,25 +310,14 @@ Donne des insights sur:
 3. Les risques à surveiller
 4. Les recommandations stratégiques`;
 
-    const grokRequest: GrokRequest = {
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.8,
-      max_tokens: 2000,
-    };
-
-    const response = await this.sendRequest(grokRequest);
-    return response.choices[0]?.message?.content || '';
+    return await this.sendRequest(userPrompt, systemInstruction);
   }
 
   /**
    * Évalue le risque d'un pool spécifique
    */
   async evaluatePoolRisk(pool: Pool): Promise<string> {
-    const systemPrompt = `Tu es un expert en gestion des risques DeFi. Évalue les risques associés à ce pool de liquidité.`;
+    const systemInstruction = `Tu es un expert en gestion des risques DeFi. Évalue les risques associés à ce pool de liquidité.`;
     
     const userPrompt = `Évalue les risques de ce pool:
 
@@ -288,18 +338,7 @@ Analyse:
 5. Risque de protocole
 6. Note globale de risque (1-10)`;
 
-    const grokRequest: GrokRequest = {
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.6,
-      max_tokens: 1500,
-    };
-
-    const response = await this.sendRequest(grokRequest);
-    return response.choices[0]?.message?.content || '';
+    return await this.sendRequest(userPrompt, systemInstruction);
   }
 
   /**
@@ -310,7 +349,7 @@ Analyse:
     budget: number,
     riskProfile: 'conservative' | 'moderate' | 'aggressive'
   ): Promise<string> {
-    const systemPrompt = `Tu es un conseiller financier DeFi. Crée une stratégie d'investissement diversifiée.`;
+    const systemInstruction = `Tu es un conseiller financier DeFi. Crée une stratégie d'investissement diversifiée.`;
     
     const userPrompt = `Crée une stratégie d'investissement avec:
 
@@ -336,17 +375,6 @@ Pools: ${JSON.stringify(pools.slice(0, 20).map(p => ({
   stablecoin: p.stablecoin,
 })), null, 2)}`;
 
-    const grokRequest: GrokRequest = {
-      model: this.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 3000,
-    };
-
-    const response = await this.sendRequest(grokRequest);
-    return response.choices[0]?.message?.content || '';
+    return await this.sendRequest(userPrompt, systemInstruction);
   }
 }

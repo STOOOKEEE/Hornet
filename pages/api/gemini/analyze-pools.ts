@@ -1,12 +1,12 @@
 /**
- * API Route pour analyser les pools avec Grok
- * POST /api/grok/analyze-pools
+ * API Route pour analyser les pools avec Gemini
+ * POST /api/gemini/analyze-pools
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GrokAPI } from '@/services/grok';
+import { GeminiAPI } from '@/services/gemini';
 import { Pool } from '@/services/defillama/types';
-import { PoolAnalysisRequest } from '@/services/grok/types';
+import { PoolAnalysisRequest } from '@/services/gemini/types';
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,9 +19,9 @@ export default async function handler(
 
   try {
     // Vérifier la clé API
-    const apiKey = process.env.GROK_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: 'GROK_API_KEY not configured' });
+      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
 
     // Extraire les données de la requête
@@ -36,11 +36,11 @@ export default async function handler(
     const MAX_POOLS = 30;
     const limitedPools = pools.slice(0, MAX_POOLS);
 
-    // Initialiser Grok
-    const grok = new GrokAPI({ apiKey });
+    // Initialiser Gemini
+    const gemini = new GeminiAPI({ apiKey });
 
     // Analyser les pools
-    const analysis = await grok.analyzePools({
+    const analysis = await gemini.analyzePools({
       pools: limitedPools,
       criteria,
       customPrompt,
