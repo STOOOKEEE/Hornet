@@ -27,10 +27,10 @@ export default async function handler(
     }
 
     // Limiter le nombre de pools pour éviter de surcharger Gemini
-    // Prendre les 30 meilleurs pools par TVL
+    // Prendre les 100 meilleurs pools par TVL
     const limitedPools = pools
       .sort((a, b) => b.tvlUsd - a.tvlUsd)
-      .slice(0, 30);
+      .slice(0, 100);
     
     console.log(`📊 Analyse de ${limitedPools.length} pools (sur ${pools.length} disponibles)`);
 
@@ -62,20 +62,21 @@ export default async function handler(
         minTvl: 10000,
         preferredChains: ['Base'],
       },
-      customPrompt: `Analyse ces pools de liquidité USDC sur Base et recommande les 3 meilleures stratégies pour chaque niveau de risque:
-      
-1. **Stratégie Faible Risque** (conservative): Pools stables avec TVL élevé et protocoles établis
-2. **Stratégie Risque Modéré** (moderate): Équilibre entre rendement et sécurité
-3. **Stratégie Risque Élevé** (aggressive): Maximisation du rendement avec des protocoles plus récents ou innovants
+      customPrompt: `Analyse ces pools USDC sur Base et recommande le meilleur pour chaque niveau de risque.
 
-Pour chaque stratégie, fournis:
-- Le pool recommandé
-- L'APY attendu
-- Le niveau de confiance (0-100)
-- Les avantages et inconvénients
-- Une explication détaillée
+CRITÈRES:
+- Low Risk: TVL > $1M, APY 3-10%, protocoles établis (Aave, Morpho, Merkl)
+- Medium Risk: TVL > $500K, APY 8-20%, bon équilibre rendement/sécurité
+- High Risk: TVL > $100K, APY 15-50%, potentiel élevé
 
-Concentre-toi sur les pools avec le meilleur rapport rendement/risque pour chaque catégorie.`,
+RÉPONSE CONCISE:
+Pour chaque pool, fournis UNIQUEMENT:
+- Score (0-100)
+- 2-3 pros maximum
+- 1-2 cons maximum
+- 1 phrase d'explication courte
+
+Pas de blabla, juste l'essentiel.`,
     });
 
     // Organiser les recommandations par niveau de risque

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Brain, TrendingUp, ArrowRight, Sparkles, Search, Loader2, AlertCircle } from "lucide-react";
+import { Brain, TrendingUp, ArrowRight, Sparkles, Search, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useState } from "react";
@@ -140,23 +140,12 @@ export function AIOptimizer() {
       {/* Analysis Results */}
       {analysis && (
         <>
-          {/* Summary */}
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <Sparkles className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-blue-400 text-sm font-medium mb-1">Analysis Summary</p>
-                <p className="text-blue-400/80 text-xs">{analysis.summary}</p>
-                <p className="text-blue-400/60 text-xs mt-2">
-                  {analysis.totalPoolsAnalyzed} pools analyzed on Base
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Risk Level Selector */}
           <div className="mb-6">
-            <p className="text-sm text-gray-400 mb-3">Select Risk Level</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-gray-400">Select Risk Level</p>
+              <p className="text-xs text-gray-500">{analysis.totalPoolsAnalyzed} pools analyzed</p>
+            </div>
             <div className="grid grid-cols-3 gap-2">
               {(['low', 'medium', 'high'] as const).map((risk) => (
                 <button
@@ -183,29 +172,27 @@ export function AIOptimizer() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-xl p-4"
         >
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-medium">{currentStrategy.pool.project}</span>
-                <Badge variant="secondary" className="text-xs">
-                  {currentStrategy.score}% confidence
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className={`text-xs ${
-                    selectedRisk === 'low'
-                      ? 'border-green-500/50 text-green-400'
-                      : selectedRisk === 'medium'
-                      ? 'border-blue-500/50 text-blue-400'
-                      : 'border-orange-500/50 text-orange-400'
-                  }`}
-                >
-                  {selectedRisk === 'low' ? 'Low Risk' : selectedRisk === 'medium' ? 'Medium Risk' : 'High Risk'}
-                </Badge>
-              </div>
-              <p className="text-xs text-gray-400 mb-2">{currentStrategy.pool.symbol}</p>
-              <p className="text-xs text-gray-400">{currentStrategy.reasoning}</p>
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-medium">{currentStrategy.pool.project}</span>
+              <Badge variant="secondary" className="text-xs">
+                {currentStrategy.score}% confidence
+              </Badge>
+              <Badge
+                variant="outline"
+                className={`text-xs ${
+                  selectedRisk === 'low'
+                    ? 'border-green-500/50 text-green-400'
+                    : selectedRisk === 'medium'
+                    ? 'border-blue-500/50 text-blue-400'
+                    : 'border-orange-500/50 text-orange-400'
+                }`}
+              >
+                {selectedRisk === 'low' ? 'Low Risk' : selectedRisk === 'medium' ? 'Medium Risk' : 'High Risk'}
+              </Badge>
             </div>
+            <p className="text-xs text-gray-400 mb-2">{currentStrategy.pool.symbol}</p>
+            <p className="text-xs text-gray-400">{currentStrategy.reasoning}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -238,13 +225,23 @@ export function AIOptimizer() {
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            className="w-full border border-white/10 hover:bg-white/10 hover:border-purple-500/50"
-          >
-            Apply Strategy
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="ghost"
+              className="border border-white/10 hover:bg-white/10 hover:border-purple-500/50"
+            >
+              Apply Strategy
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              variant="ghost"
+              className="border border-purple-500/30 hover:bg-purple-500/10 hover:border-purple-500/50 text-purple-400"
+              onClick={() => window.open(`https://defillama.com/yields/pool/${currentStrategy.pool.pool}`, '_blank')}
+            >
+              View Details
+              <ExternalLink className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </motion.div>
       ) : analysis ? (
         <div className="text-center py-8 text-gray-400 text-sm">
