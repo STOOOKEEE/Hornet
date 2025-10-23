@@ -17,7 +17,7 @@ export function WalletConnect() {
     address: address,
   });
 
-  // Vérifier et changer le réseau vers Base si nécessaire
+  // Check and switch to Base network if necessary
   useEffect(() => {
     if (isConnected && chain && chain.id !== base.id) {
       switchChain({ chainId: base.id });
@@ -56,7 +56,7 @@ export function WalletConnect() {
           </div>
           <h3 className="text-xl text-white mb-2">Connect Wallet</h3>
           <p className="text-gray-400 text-sm mb-6">
-            Connectez votre wallet pour commencer à générer des rendements sur vos USDC
+            Connect your wallet to start earning yield on your USDC
           </p>
           <button
             onClick={() => open()}
@@ -66,7 +66,7 @@ export function WalletConnect() {
             <span>Connect Wallet</span>
           </button>
           <div className="mt-6 text-xs text-gray-500">
-            Supporte tous les wallets via WalletConnect
+            Supports all wallets via WalletConnect
           </div>
         </div>
       </motion.div>
@@ -85,15 +85,15 @@ export function WalletConnect() {
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-yellow-500 text-sm font-medium">Mauvais réseau</p>
+              <p className="text-yellow-500 text-sm font-medium">Wrong Network</p>
               <p className="text-yellow-500/80 text-xs mt-1">
-                Veuillez basculer vers le réseau Base
+                Please switch to Base network
               </p>
               <button
                 onClick={() => switchChain({ chainId: base.id })}
                 className="mt-2 px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-500 rounded-lg text-xs font-medium transition-colors"
               >
-                Basculer vers Base
+                Switch to Base
               </button>
             </div>
           </div>
@@ -106,7 +106,7 @@ export function WalletConnect() {
               <Wallet className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <div className="text-sm text-gray-400 mb-1">Wallet connecté</div>
+              <div className="text-sm text-gray-400 mb-1">Wallet Connected</div>
               <div className="flex items-center gap-2">
                 <span className="text-white font-medium">
                   {address && formatAddress(address)}
@@ -135,7 +135,7 @@ export function WalletConnect() {
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Réseau</span>
+            <span className="text-sm text-gray-400">Network</span>
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${isWrongNetwork ? 'bg-yellow-500' : 'bg-green-500'}`} />
               <span className="text-sm text-white font-medium">
@@ -151,13 +151,13 @@ export function WalletConnect() {
             onClick={() => open()}
             className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors text-sm font-medium"
           >
-            Changer de wallet
+            Change Wallet
           </button>
           <button
             onClick={() => disconnect()}
             className="flex-1 px-4 py-2.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors text-sm font-medium"
           >
-            Déconnecter
+            Disconnect
           </button>
         </div>
       </div>

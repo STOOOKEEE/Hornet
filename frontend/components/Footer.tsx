@@ -22,7 +22,7 @@ export function Footer() {
               <span className="text-xl text-white">Hornet</span>
             </div>
             <p className="text-gray-500 mb-8 max-w-sm">
-              AI-powered yield optimization for USDC on Base
+              Automated yield optimization for USDC on Base
             </p>
             <div className="flex items-center gap-4">
               <motion.a

@@ -20,8 +20,8 @@ interface RiskOption {
 const riskOptions: RiskOption[] = [
   {
     level: "low",
-    label: "Faible Risque",
-    description: "Stratégies stables et sécurisées avec des protocoles établis",
+    label: "Low Risk",
+    description: "Stable and secure strategies with established protocols",
     icon: Shield,
     color: "text-green-400",
     bgColor: "bg-green-500/10",
@@ -30,8 +30,8 @@ const riskOptions: RiskOption[] = [
   },
   {
     level: "medium",
-    label: "Risque Modéré",
-    description: "Équilibre entre sécurité et rendement optimisé",
+    label: "Moderate Risk",
+    description: "Balance between security and optimized yield",
     icon: TrendingUp,
     color: "text-blue-400",
     bgColor: "bg-blue-500/10",
@@ -40,8 +40,8 @@ const riskOptions: RiskOption[] = [
   },
   {
     level: "high",
-    label: "Risque Élevé",
-    description: "Maximisation des rendements avec des stratégies agressives",
+    label: "High Risk",
+    description: "Maximize returns with aggressive strategies",
     icon: Zap,
     color: "text-orange-400",
     bgColor: "bg-orange-500/10",
@@ -72,9 +72,9 @@ export function RiskSelector({ onRiskChange, defaultRisk = "medium" }: RiskSelec
     >
       {/* Header */}
       <div className="mb-6">
-        <h3 className="text-xl mb-2">Niveau de Risque</h3>
+        <h3 className="text-xl mb-2">Risk Level</h3>
         <p className="text-sm text-gray-400">
-          Sélectionnez votre profil de risque pour adapter les stratégies d'optimisation
+          Select your risk profile to adapt optimization strategies
         </p>
       </div>
 
@@ -134,8 +134,8 @@ export function RiskSelector({ onRiskChange, defaultRisk = "medium" }: RiskSelec
           </div>
           <div className="flex-1">
             <p className="text-xs text-blue-400/90">
-              L'IA ajustera automatiquement ses recommandations en fonction de votre profil de risque.
-              Les APY indiqués sont des estimations basées sur les performances historiques.
+              The system will automatically adjust its recommendations based on your risk profile.
+              The indicated APYs are estimates based on historical performance.
             </p>
           </div>
         </div>

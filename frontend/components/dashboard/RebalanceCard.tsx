@@ -4,14 +4,24 @@ import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
-import { useRebalanceData } from '../../hooks/useRebalanceData';
 
 export function RebalanceCard() {
-  const { data, isLoading } = useRebalanceData();
   const [autoRebalance, setAutoRebalance] = useState(false);
   const [isRebalancing, setIsRebalancing] = useState(false);
 
-  // Calculer le temps depuis le dernier rebalancing
+  // Mock data to replace useRebalanceData
+  const data = {
+    lastRebalanceTime: Date.now() - 86400000, // 1 day ago
+    totalRebalances: 0,
+    recommendedAction: null as {
+      from: string;
+      to: string;
+      apyGain: number;
+      estimatedGas: string;
+    } | null,
+  };
+
+  // Calculate time since last rebalance
   const getTimeSinceLastRebalance = () => {
     if (!data.lastRebalanceTime) return "Never";
     

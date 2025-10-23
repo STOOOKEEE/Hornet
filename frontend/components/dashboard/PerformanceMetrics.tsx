@@ -1,51 +1,54 @@
 import { motion } from "framer-motion";
 import { TrendingUp, Activity, DollarSign, Percent } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { useUserMetrics } from '../../hooks/useProtocolData';
 import { useState } from 'react';
+import { useRealTimeData } from '../../hooks/useRealTimeData';
 
 type TimePeriod = '1W' | '1M' | '3M' | '1Y';
 
 export function PerformanceMetrics() {
-  const { metrics, isLoading } = useUserMetrics();
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('1M');
+  const { metrics, isLoading } = useRealTimeData();
   
   const formattedMetrics = [
     {
       label: "Total Value Locked",
-      value: metrics ? `$${(Number(metrics.totalValueLocked) / 1e18).toFixed(2)}` : "$0.00",
+      value: `$${(Number(metrics.totalValueLocked) / 1e6).toFixed(2)}`, // USDC a 6 décimales
       change: "0%",
       positive: true,
       icon: DollarSign,
     },
     {
       label: "Current APY",
-      value: metrics ? `${metrics.currentApy}%` : "0%",
+      value: `${metrics.currentApy}%`,
       change: "0%",
       positive: true,
       icon: Percent,
     },
     {
       label: "Total Earned",
-      value: metrics ? `$${(Number(metrics.totalEarned) / 1e18).toFixed(2)}` : "$0.00",
+      value: `$${(Number(metrics.totalEarned) / 1e6).toFixed(2)}`,
       change: "0%",
       positive: true,
       icon: TrendingUp,
     },
     {
       label: "Active Strategy",
-      value: metrics?.activeStrategy || "None",
+      value: metrics.activeStrategy,
       change: "",
       positive: true,
       icon: Activity,
     },
   ];
 
-  // Filtrer les données selon la période sélectionnée
+  // Filter data based on selected period
   const filterDataByPeriod = (period: TimePeriod) => {
     if (!metrics?.historicalBalances || metrics.historicalBalances.length === 0) {
-      return [{ date: "Now", value: 0 }];
+      console.log('No historical data available');
+      return [{ date: "Now", portfolio: 0, tvl: 0 }];
     }
+
+    console.log('Filtering data for period:', period, 'Total points:', metrics.historicalBalances.length);
 
     const now = Date.now();
     let cutoffTime: number;
@@ -71,21 +74,23 @@ export function PerformanceMetrics() {
       (item) => item.timestamp >= cutoffTime
     );
 
+    console.log('Filtered data points:', filtered.length);
+
     return filtered.map((item) => ({
       date: new Date(item.timestamp).toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric' 
       }),
-      value: Number(item.value) / 1e18
+      portfolio: Number(item.portfolio || item.value) / 1e6, // USDC a 6 décimales
+      tvl: Number(item.tvl || 0) / 1e6 // USDC a 6 décimales
     }));
   };
 
   const displayChartData = filterDataByPeriod(selectedPeriod);
 
-  // Calculer les métriques basées sur les données réelles de l'utilisateur
+  // Calculate metrics based on real user data
   const calculateAverageAPY = () => {
-    if (!metrics) return "0";
-    return metrics.currentApy.toFixed(1);
+    return metrics.currentApy;
   };
 
   const calculateTotalReturn = () => {
@@ -93,12 +98,14 @@ export function PerformanceMetrics() {
       return { value: "0", positive: true };
     }
     
-    const firstBalance = Number(metrics.historicalBalances[0].value) / 1e18;
-    const lastBalance = Number(metrics.historicalBalances[metrics.historicalBalances.length - 1].value) / 1e18;
+    // Le Total Return doit refléter uniquement les gains des protocoles (TVL)
+    // Pas les fluctuations de prix de l'ETH dans le wallet
+    const firstTVL = Number(metrics.historicalBalances[0].tvl) / 1e6; // USDC a 6 décimales
+    const lastTVL = Number(metrics.historicalBalances[metrics.historicalBalances.length - 1].tvl) / 1e6;
     
-    if (firstBalance === 0) return { value: "0", positive: true };
+    if (firstTVL === 0) return { value: "0", positive: true };
     
-    const returnPercentage = ((lastBalance - firstBalance) / firstBalance) * 100;
+    const returnPercentage = ((lastTVL - firstTVL) / firstTVL) * 100;
     return {
       value: returnPercentage.toFixed(1),
       positive: returnPercentage >= 0
@@ -163,7 +170,19 @@ export function PerformanceMetrics() {
         className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl">Portfolio Growth</h3>
+          <div>
+            <h3 className="text-xl mb-2">Portfolio Growth</h3>
+            <div className="flex gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span className="text-gray-400">Portfolio Value</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-gray-400">TVL (Protocol)</span>
+              </div>
+            </div>
+          </div>
           <div className="flex gap-2">
             {(['1W', '1M', '3M', '1Y'] as TimePeriod[]).map((period) => (
               <button
@@ -185,9 +204,13 @@ export function PerformanceMetrics() {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={displayChartData}>
               <defs>
-                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="colorPortfolio" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorTVL" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -210,10 +233,19 @@ export function PerformanceMetrics() {
               />
               <Area
                 type="monotone"
-                dataKey="value"
+                dataKey="portfolio"
+                name="Portfolio Value"
                 stroke="#3b82f6"
                 strokeWidth={2}
-                fill="url(#colorValue)"
+                fill="url(#colorPortfolio)"
+              />
+              <Area
+                type="monotone"
+                dataKey="tvl"
+                name="TVL"
+                stroke="#10b981"
+                strokeWidth={2}
+                fill="url(#colorTVL)"
               />
             </AreaChart>
           </ResponsiveContainer>

@@ -40,7 +40,7 @@ export function LoadingAnimation({ onLaunchApp }: LoadingAnimationProps) {
           className="mb-8 md:mb-12"
         >
           <p className="text-gray-400 text-sm md:text-base tracking-wide text-center">
-            AI-powered yield optimization for USDC on Base
+            Automated yield optimization for USDC on Base
           </p>
         </motion.div>
 

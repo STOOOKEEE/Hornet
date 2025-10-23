@@ -23,7 +23,7 @@ export function WalletAlert() {
         </div>
         <div className="flex-1">
           <h4 className="text-yellow-500 font-medium mb-1">
-            Wallet non connecté
+            Wallet Not Connected
           </h4>
           <p className="text-yellow-500/80 text-sm">
             Veuillez connecter votre wallet pour utiliser l'application et accéder à toutes les fonctionnalités.

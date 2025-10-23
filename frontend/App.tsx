@@ -2,7 +2,6 @@ import { useState } from "react";
 import { LoadingAnimation } from "./components/LoadingAnimation";
 import { Features } from "./components/Features";
 import { HowItWorks } from "./components/HowItWorks";
-import { AIOptimization } from "./components/AIOptimization";
 import { Security } from "./components/Security";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
@@ -20,7 +19,6 @@ export default function App() {
       <Navbar onLaunchApp={() => setShowDashboard(true)} />
       <LoadingAnimation onLaunchApp={() => setShowDashboard(true)} />
       <Features />
-      <AIOptimization />
       <HowItWorks />
       <Security />
       <Footer />

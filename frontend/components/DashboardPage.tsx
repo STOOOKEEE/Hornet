@@ -4,10 +4,9 @@ import { WalletConnect } from "./dashboard/WalletConnect";
 import { WalletAlert } from "./dashboard/WalletAlert";
 import { WalletButton } from "./WalletButton";
 import { DepositWithdraw } from "./dashboard/DepositWithdraw";
-import { AIOptimizer } from "./dashboard/AIOptimizer";
+import { PoolOptimizer } from "./dashboard/PoolOptimizer";
 import { PerformanceMetrics } from "./dashboard/PerformanceMetrics";
 import { RebalanceCard } from "./dashboard/RebalanceCard";
-import { RiskSelector } from "./dashboard/RiskSelector";
 
 interface DashboardPageProps {
   onBackToHome: () => void;
@@ -62,7 +61,7 @@ export function DashboardPage({ onBackToHome }: DashboardPageProps) {
           >
             <h1 className="text-3xl md:text-4xl mb-2">Dashboard</h1>
             <p className="text-gray-400">
-              Manage your USDC yields with AI-powered optimization
+              Manage your USDC yields with automated optimization
             </p>
           </motion.div>
 
@@ -80,15 +79,10 @@ export function DashboardPage({ onBackToHome }: DashboardPageProps) {
             <PerformanceMetrics />
           </div>
 
-          {/* Risk Selector */}
-          <div className="mb-8">
-            <RiskSelector />
-          </div>
-
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <DepositWithdraw />
-            <AIOptimizer />
+            <PoolOptimizer />
           </div>
 
           {/* Rebalance Section */}

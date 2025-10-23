@@ -13,7 +13,7 @@ const steps = [
   },
   {
     number: "03",
-    title: "AI Optimizes",
+    title: "Auto-Optimize",
     description: "Continuous monitoring & suggestions",
   },
   {
